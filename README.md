@@ -44,9 +44,14 @@ deploy/       秘密情報を含まない例
 本番のHost、Data、ContainerをSHA-256で三者照合し、JAR名・modId・Side・配布元を含む公開可能なロックを生成します。
 
 - 手順: [`docs/oci-mod-lock.md`](docs/oci-mod-lock.md)
-- 生成ツール: [`scripts/export_oci_mod_lock.py`](scripts/export_oci_mod_lock.py)
+- 生成ツール: [`scripts/export_oci_mod_lock_v2.py`](scripts/export_oci_mod_lock_v2.py)
+- 共通メタデータ解析: [`scripts/mod_metadata_parser.py`](scripts/mod_metadata_parser.py)
+- 一括診断: [`scripts/report_missing_mod_metadata.py`](scripts/report_missing_mod_metadata.py)
+- Metadata補正: [`manifests/metadata-overrides.json`](manifests/metadata-overrides.json)
 - Side補正: [`manifests/side-overrides.json`](manifests/side-overrides.json)
 - 配布元補正: [`manifests/distribution-overrides.json`](manifests/distribution-overrides.json)
+
+`export_oci_mod_lock_v2.py`は、NeoForgeの`[[mods]] #comment`形式を含む正式なTOML構文に対応した互換エントリーポイントです。
 
 ## 開発フロー
 
