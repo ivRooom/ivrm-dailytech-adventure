@@ -5,14 +5,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+import zipfile
 from pathlib import Path
 
-from export_oci_mod_lock import (
-    ExportError,
-    load_json,
-    parse_standard_metadata,
-    resolve_metadata_override,
-)
+from export_oci_mod_lock import ExportError, load_json, resolve_metadata_override
+from mod_metadata_parser import parse_standard_metadata
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -53,7 +50,12 @@ def main() -> int:
     missing: list[str] = []
 
     for jar in jars:
-        if parse_standard_metadata(jar) is not None:
+        try:
+            parsed = parse_standard_metadata(jar)
+        except (OSError, zipfile.BadZipFile, json.JSONDecodeError) as exc:
+            raise ExportError(f"Unable to inspect JAR metadata: {jar.name}: {exc}") from exc
+
+        if parsed is not None:
             standard.append(jar.name)
             continue
         if resolve_metadata_override(jar.name, overrides) is not None:
