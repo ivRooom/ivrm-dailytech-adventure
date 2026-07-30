@@ -29,5 +29,10 @@ jobs:
       - name: Python構文を検証
         run: python -m compileall -q scripts
 
+      - name: MODメタデータ解析をテスト
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest scripts/test_mod_metadata_parser.py
+
       - name: 設定と秘密情報を検証
         run: python scripts/validate_repository.py
