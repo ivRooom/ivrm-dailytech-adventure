@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Export and verify the live OCI Minecraft MOD lock.
 
-This script is intentionally dependency-free. It verifies that the host MOD
-directory, /data/mods, and the running mc-main container contain exactly the
-same JAR filenames and SHA-256 hashes, then emits a public-safe JSON lock.
+The script verifies that the host MOD directory, /data/mods, and the running
+mc-main container contain exactly the same JAR filenames and SHA-256 hashes,
+then emits a public-safe JSON lock.
+
+Some performance or bootstrap JARs do not expose standard NeoForge/Forge/Fabric
+metadata. Those JARs must be explicitly declared in metadata-overrides.json.
+The exporter never guesses a modId from a filename.
 """
 
 from __future__ import annotations
@@ -89,8 +93,7 @@ def inspect_container(container: str) -> tuple[str, str]:
 
 def inspect_optional_container(container: str) -> str:
     result = subprocess.run(
-        command_prefix()
-        + ["inspect", container, "--format", "{{.State.Status}}"],
+        command_prefix() + ["inspect", container, "--format", "{{.State.Status}}"],
         check=False,
         text=True,
         stdout=subprocess.PIPE,
@@ -108,7 +111,7 @@ def directory_hashes(directory: Path) -> dict[str, str]:
 
 def container_hashes(container: str) -> dict[str, str]:
     shell = (
-        'set -eu; '
+        "set -eu; "
         'for file in /data/mods/*.jar; do '
         '[ -f "$file" ] || continue; '
         'sha256sum "$file"; '
@@ -194,7 +197,7 @@ def parse_mod_blocks(text: str) -> list[tuple[str, str | None]]:
     return mods
 
 
-def parse_jar_metadata(path: Path) -> tuple[str, str, list[str]]:
+def parse_standard_metadata(path: Path) -> tuple[str, str, list[str]] | None:
     try:
         with zipfile.ZipFile(path) as archive:
             names = set(archive.namelist())
@@ -208,8 +211,7 @@ def parse_jar_metadata(path: Path) -> tuple[str, str, list[str]]:
                 if mod_blocks:
                     mod_ids = list(dict.fromkeys(mod_id for mod_id, _ in mod_blocks))
                     primary, primary_name = mod_blocks[0]
-                    display = primary_name or path.stem
-                    return primary, display, mod_ids
+                    return primary, primary_name or path.stem, mod_ids
 
             if "fabric.mod.json" in names:
                 data = json.loads(decode_zip_text(archive, "fabric.mod.json"))
@@ -219,10 +221,68 @@ def parse_jar_metadata(path: Path) -> tuple[str, str, list[str]]:
                     return mod_id, display, [mod_id]
     except (OSError, zipfile.BadZipFile, json.JSONDecodeError) as exc:
         raise ExportError(f"Unable to inspect JAR metadata: {path.name}: {exc}") from exc
+    return None
+
+
+def resolve_metadata_override(
+    filename: str,
+    overrides: dict[str, Any],
+) -> tuple[str, str, list[str]] | None:
+    mapping = overrides.get("byFilename", {})
+    if not isinstance(mapping, dict):
+        raise ExportError("metadata-overrides.json byFilename must be an object")
+
+    selected = mapping.get(filename)
+    if selected is None:
+        return None
+    if not isinstance(selected, dict):
+        raise ExportError(f"Metadata override must be an object: {filename}")
+
+    mod_id = str(selected.get("modId", "")).strip().lower()
+    name = str(selected.get("name", "")).strip()
+    raw_mod_ids = selected.get("modIds", [mod_id])
+
+    if not mod_id or not VALID_MOD_ID.fullmatch(mod_id):
+        raise ExportError(f"Invalid metadata override modId for {filename}: {mod_id}")
+    if not name:
+        raise ExportError(f"Metadata override name is required: {filename}")
+    if not isinstance(raw_mod_ids, list) or not raw_mod_ids:
+        raise ExportError(f"Metadata override modIds must be a non-empty array: {filename}")
+
+    mod_ids: list[str] = []
+    for item in raw_mod_ids:
+        candidate = str(item).strip().lower()
+        if not VALID_MOD_ID.fullmatch(candidate):
+            raise ExportError(
+                f"Invalid metadata override modIds entry for {filename}: {candidate}"
+            )
+        if candidate not in mod_ids:
+            mod_ids.append(candidate)
+    if mod_id not in mod_ids:
+        raise ExportError(
+            f"Metadata override modId must be included in modIds: {filename}"
+        )
+    return mod_id, name, mod_ids
+
+
+def resolve_jar_metadata(
+    path: Path,
+    overrides: dict[str, Any],
+) -> tuple[str, str, list[str], str]:
+    parsed = parse_standard_metadata(path)
+    if parsed is not None:
+        mod_id, display_name, mod_ids = parsed
+        return mod_id, display_name, mod_ids, "jar"
+
+    overridden = resolve_metadata_override(path.name, overrides)
+    if overridden is not None:
+        mod_id, display_name, mod_ids = overridden
+        return mod_id, display_name, mod_ids, "filename-override"
 
     raise ExportError(
         f"No NeoForge/Forge/Fabric MOD metadata found in {path.name}. "
-        "Review the JAR before publishing the lock."
+        "Add a reviewed byFilename entry to manifests/metadata-overrides.json "
+        "before publishing the lock."
     )
 
 
@@ -253,9 +313,7 @@ def resolve_distribution(
             if mod_id in by_mod_id
         ]
         if len(matches) > 1 and any(item != matches[0] for item in matches[1:]):
-            raise ExportError(
-                f"Conflicting distribution overrides for {filename}"
-            )
+            raise ExportError(f"Conflicting distribution overrides for {filename}")
         if matches:
             selected = matches[0]
 
@@ -333,6 +391,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--loader-version", default="26.1.2.81")
     parser.add_argument("--java", type=int, default=25)
     parser.add_argument(
+        "--metadata-overrides",
+        type=Path,
+        default=Path("manifests/metadata-overrides.json"),
+    )
+    parser.add_argument(
         "--side-overrides",
         type=Path,
         default=Path("manifests/side-overrides.json"),
@@ -367,6 +430,7 @@ def main() -> int:
             f"{args.resource_container} must remain stopped, got {resource_status}"
         )
 
+    metadata_overrides = load_json(args.metadata_overrides)
     side_overrides = load_json(args.side_overrides)
     distribution_overrides = load_json(args.distribution_overrides)
     host = directory_hashes(host_dir)
@@ -385,7 +449,10 @@ def main() -> int:
 
     for filename, digest in sorted(host.items(), key=lambda item: item[0].lower()):
         jar_path = host_dir / filename
-        mod_id, display_name, mod_ids = parse_jar_metadata(jar_path)
+        mod_id, display_name, mod_ids, metadata_source = resolve_jar_metadata(
+            jar_path,
+            metadata_overrides,
+        )
         if not VALID_MOD_ID.fullmatch(mod_id):
             raise ExportError(f"Invalid primary modId '{mod_id}' in {filename}")
         if mod_id in seen_primary_ids:
@@ -408,6 +475,7 @@ def main() -> int:
                 "name": display_name,
                 "modId": mod_id,
                 "modIds": mod_ids,
+                "metadataSource": metadata_source,
                 "filename": filename,
                 "sha256": digest,
                 "sizeBytes": jar_path.stat().st_size,
@@ -442,12 +510,16 @@ def main() -> int:
     server_only = sum(1 for mod in mods if mod["side"] == "server")
     both = sum(1 for mod in mods if mod["side"] == "both")
     client_only = sum(1 for mod in mods if mod["side"] == "client")
+    metadata_overridden = sum(
+        1 for mod in mods if mod["metadataSource"] == "filename-override"
+    )
 
     print("OCI MOD lock export complete")
     print(f"Main={main_status}/{health}")
     print(f"Resource={resource_status}")
     print(f"Host/Data/Container JAR count={len(mods)}")
     print(f"Side classification: both={both} server={server_only} client={client_only}")
+    print(f"Metadata filename overrides={metadata_overridden}")
     print(f"Output={args.output}")
     print(f"SHA256={lock_sha}")
     return 0

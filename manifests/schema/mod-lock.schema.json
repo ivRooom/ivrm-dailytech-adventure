@@ -58,6 +58,7 @@
           "name",
           "modId",
           "modIds",
+          "metadataSource",
           "filename",
           "sha256",
           "sizeBytes",
@@ -84,6 +85,12 @@
               "type": "string",
               "pattern": "^[a-z0-9_.-]+$"
             }
+          },
+          "metadataSource": {
+            "enum": [
+              "jar",
+              "filename-override"
+            ]
           },
           "filename": {
             "type": "string",

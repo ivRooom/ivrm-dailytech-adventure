@@ -1,0 +1,12 @@
+{
+  "byFilename": {
+    "alternate_current-mc26.1-1.9.0.jar": {
+      "name": "Alternate Current",
+      "modId": "alternate_current",
+      "modIds": [
+        "alternate_current"
+      ],
+      "reason": "This server-side optimization JAR does not expose standard NeoForge, Forge, or Fabric MOD metadata readable by the lock exporter. The identity is pinned to the reviewed production filename."
+    }
+  }
+}
