@@ -39,6 +39,15 @@ deploy/       秘密情報を含まない例
 .github/      CI、PRテンプレート
 ```
 
+## OCIの80 JARロック
+
+本番のHost、Data、ContainerをSHA-256で三者照合し、JAR名・modId・Side・配布元を含む公開可能なロックを生成します。
+
+- 手順: [`docs/oci-mod-lock.md`](docs/oci-mod-lock.md)
+- 生成ツール: [`scripts/export_oci_mod_lock.py`](scripts/export_oci_mod_lock.py)
+- Side補正: [`manifests/side-overrides.json`](manifests/side-overrides.json)
+- 配布元補正: [`manifests/distribution-overrides.json`](manifests/distribution-overrides.json)
+
 ## 開発フロー
 
 1. `main`から作業ブランチを作る

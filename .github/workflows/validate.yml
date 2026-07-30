@@ -26,5 +26,8 @@ jobs:
       - name: 依存関係を導入
         run: python -m pip install -r requirements-dev.txt
 
+      - name: Python構文を検証
+        run: python -m compileall -q scripts
+
       - name: 設定と秘密情報を検証
         run: python scripts/validate_repository.py
