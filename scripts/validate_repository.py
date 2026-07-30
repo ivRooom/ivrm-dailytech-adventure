@@ -36,7 +36,11 @@ def fail(message: str, errors: list[str]) -> None:
 
 def validate_files(errors: list[str]) -> None:
     for path in ROOT.rglob("*"):
-        if not path.is_file() or ".git" in path.parts:
+        if (
+            not path.is_file()
+            or ".git" in path.parts
+            or "__pycache__" in path.parts
+        ):
             continue
         rel = path.relative_to(ROOT)
         if path.name in FORBIDDEN_NAMES:
@@ -57,7 +61,7 @@ def validate_files(errors: list[str]) -> None:
 
 def validate_json(errors: list[str]) -> None:
     for path in ROOT.rglob("*.json"):
-        if ".git" in path.parts:
+        if ".git" in path.parts or "__pycache__" in path.parts:
             continue
         try:
             json.loads(path.read_text(encoding="utf-8"))
