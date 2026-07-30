@@ -1,0 +1,15 @@
+schema_version: 1
+progression_mode: linear
+groups:
+  - id: "A100000000000001"
+    key: getting_started
+    title_key: group.ivrm.getting_started
+    order: 10
+  - id: "A100000000000002"
+    key: survival
+    title_key: group.ivrm.survival
+    order: 20
+  - id: "A100000000000003"
+    key: community
+    title_key: group.ivrm.community
+    order: 30

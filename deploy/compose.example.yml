@@ -1,0 +1,20 @@
+services:
+  main:
+    image: itzg/minecraft-server:java25
+    container_name: mc-main-example
+    restart: unless-stopped
+    environment:
+      EULA: "TRUE"
+      TYPE: NEOFORGE
+      VERSION: "26.1.2"
+      NEOFORGE_VERSION: "26.1.2.81"
+      MEMORY: 7G
+      RCON_PASSWORD_FILE: /run/secrets/rcon_password
+    volumes:
+      - ./data:/data
+      - ./mods:/mods:ro
+      - ./config:/config:ro
+      - ./shared-users:/shared-users:ro
+      - ./secrets/rcon_password:/run/secrets/rcon_password:ro
+
+# 本番ではポート、ホスト名、Secret、バックアップ、監視を別の非公開Ops管理へ分離する。

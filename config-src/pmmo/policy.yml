@@ -1,0 +1,32 @@
+schema_version: 1
+status: design-source
+primary_skill_system: pmmo
+conflict_policy:
+  pufferfish_skills: disable_or_remove_after_dependency_audit
+  pufferfish_default_skill_trees: disable_or_remove
+  pufferfish_attributes: keep_only_when_required
+skills:
+  - combat
+  - endurance
+  - mining
+  - woodcutting
+  - excavation
+  - farming
+  - fishing
+  - crafting
+  - exploration
+  - arcana
+balance:
+  block_iron_tier_requirements: false
+  apply_requirements_from: diamond_and_advanced_mod_items
+  prefer_qol_perks: true
+  avoid_large_damage_multipliers: true
+anti_cheese:
+  placed_ore_rebreak: deny_xp
+  crop_place_break_loop: deny_xp
+  repeated_target_spam: deny_xp
+  automation_xp: disabled_by_default
+integration_tests:
+  - veinminer_xp_not_multiplied_excessively
+  - aquaculture_fishing_xp_balanced
+  - resource_server_progress_is_not_shared_unsafely

@@ -1,0 +1,48 @@
+schema_version: 1
+chapter:
+  id: "4F77846D40DA8ED3"
+  key: welcome
+  group: getting_started
+  title_key: chapter.ivrm.welcome
+  description_key: chapter.ivrm.welcome.description
+  order: 10
+quests:
+  - id: "B100000000000001"
+    key: welcome
+    title_key: quest.ivrm.welcome
+    description_key: quest.ivrm.welcome.description
+    task:
+      type: checkmark
+    rewards: []
+  - id: "B100000000000002"
+    key: read_rules
+    title_key: quest.ivrm.read_rules
+    description_key: quest.ivrm.read_rules.description
+    dependencies: ["B100000000000001"]
+    task:
+      type: checkmark
+    rewards: []
+  - id: "B100000000000003"
+    key: install_client_profile
+    title_key: quest.ivrm.install_client_profile
+    description_key: quest.ivrm.install_client_profile.description
+    dependencies: ["B100000000000002"]
+    task:
+      type: checkmark
+    rewards: []
+  - id: "B100000000000004"
+    key: join_team
+    title_key: quest.ivrm.join_team
+    description_key: quest.ivrm.join_team.description
+    dependencies: ["B100000000000003"]
+    task:
+      type: checkmark
+    rewards: []
+  - id: "B100000000000005"
+    key: test_voice_chat
+    title_key: quest.ivrm.test_voice_chat
+    description_key: quest.ivrm.test_voice_chat.description
+    dependencies: ["B100000000000003"]
+    task:
+      type: checkmark
+    rewards: []
