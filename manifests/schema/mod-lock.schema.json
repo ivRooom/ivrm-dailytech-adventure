@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ivRooom/ivrm-dailytech-adventure/manifests/schema/mod-lock.schema.json",
+  "title": "IVRM Minecraft MOD Lock",
+  "type": "object",
+  "required": ["minecraft", "loader", "loaderVersion", "mods"],
+  "properties": {
+    "minecraft": {"type": "string"},
+    "loader": {"type": "string"},
+    "loaderVersion": {"type": "string"},
+    "mods": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "modId", "filename", "sha256", "side"],
+        "properties": {
+          "name": {"type": "string"},
+          "modId": {"type": "string"},
+          "filename": {"type": "string", "pattern": "\\.jar$"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "side": {"enum": ["both", "server", "client"]},
+          "projectId": {"type": ["integer", "null"]},
+          "fileId": {"type": ["integer", "null"]},
+          "source": {"enum": ["curseforge", "modrinth", "github", "manual"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "IVRM DailyTech Adventure Main",
+  "minecraft": "26.1.2",
+  "loader": "NeoForge",
+  "loaderVersion": "26.1.2.81",
+  "java": 25,
+  "jarCount": 80,
+  "state": "running-healthy",
+  "worldPolicy": "keep-existing-world",
+  "resourceServerPolicy": "separate-container-monthly-reset-no-world-backup",
+  "lockStatus": "full-80-jar-sha-lock-pending-import-from-oci",
+  "latestExpansion": [
+    "Farming for Blockheads",
+    "Puzzles Lib",
+    "Visual Workbench",
+    "Camera Mod",
+    "SecurityCraft",
+    "Project MMO",
+    "Artifacts",
+    "Aquaculture 2",
+    "Spice of Life: Carrot Edition"
+  ]
+}

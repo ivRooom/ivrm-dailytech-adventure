@@ -1,0 +1,50 @@
+# Secrets
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.jks
+
+# Minecraft runtime
+world/
+world_*/
+playerdata/
+backups/
+logs/
+crash-reports/
+whitelist.json
+ops.json
+usercache.json
+banned-*.json
+server.properties
+
+# Mod binaries and generated packs
+*.jar
+*.zip
+*.tar.gz
+*.mrpack
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated output
+generated/
+build/
+dist/
