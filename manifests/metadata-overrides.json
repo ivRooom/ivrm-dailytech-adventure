@@ -7,6 +7,14 @@
         "alternate_current"
       ],
       "reason": "This server-side optimization JAR does not expose standard NeoForge, Forge, or Fabric MOD metadata readable by the lock exporter. The identity is pinned to the reviewed production filename."
+    },
+    "Apotheosis-26.1.2-9.0.3.jar": {
+      "name": "Apotheosis",
+      "modId": "apotheosis",
+      "modIds": [
+        "apotheosis"
+      ],
+      "reason": "The reviewed Apotheosis 26.1.2-9.0.3 production JAR does not expose standard loader metadata readable by the lock exporter. The identity is pinned to the exact production filename and official project release."
     }
   }
 }

@@ -5,6 +5,11 @@
       "source": "modrinth",
       "projectId": null,
       "fileId": "ZyKpKsQZ"
+    },
+    "Apotheosis-26.1.2-9.0.3.jar": {
+      "source": "curseforge",
+      "projectId": 313970,
+      "fileId": 8502264
     }
   }
 }
