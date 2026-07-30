@@ -3,25 +3,136 @@
   "$id": "https://github.com/ivRooom/ivrm-dailytech-adventure/manifests/schema/mod-lock.schema.json",
   "title": "IVRM Minecraft MOD Lock",
   "type": "object",
-  "required": ["minecraft", "loader", "loaderVersion", "mods"],
+  "required": [
+    "schemaVersion",
+    "name",
+    "minecraft",
+    "loader",
+    "loaderVersion",
+    "java",
+    "generatedAt",
+    "jarCount",
+    "mods"
+  ],
   "properties": {
-    "minecraft": {"type": "string"},
-    "loader": {"type": "string"},
-    "loaderVersion": {"type": "string"},
+    "schemaVersion": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "minecraft": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loader": {
+      "enum": [
+        "neoforge",
+        "forge",
+        "fabric"
+      ]
+    },
+    "loaderVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "java": {
+      "type": "integer",
+      "minimum": 8
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "jarCount": {
+      "type": "integer",
+      "minimum": 1
+    },
     "mods": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["name", "modId", "filename", "sha256", "side"],
+        "required": [
+          "name",
+          "modId",
+          "modIds",
+          "filename",
+          "sha256",
+          "sizeBytes",
+          "side",
+          "sideSource",
+          "source",
+          "projectId",
+          "fileId"
+        ],
         "properties": {
-          "name": {"type": "string"},
-          "modId": {"type": "string"},
-          "filename": {"type": "string", "pattern": "\\.jar$"},
-          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-          "side": {"enum": ["both", "server", "client"]},
-          "projectId": {"type": ["integer", "null"]},
-          "fileId": {"type": ["integer", "null"]},
-          "source": {"enum": ["curseforge", "modrinth", "github", "manual"]}
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "modId": {
+            "type": "string",
+            "pattern": "^[a-z0-9_.-]+$"
+          },
+          "modIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_.-]+$"
+            }
+          },
+          "filename": {
+            "type": "string",
+            "pattern": "\\.jar$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "side": {
+            "enum": [
+              "both",
+              "server",
+              "client"
+            ]
+          },
+          "sideSource": {
+            "enum": [
+              "filename-override",
+              "mod-id-override",
+              "default"
+            ]
+          },
+          "projectId": {
+            "type": [
+              "integer",
+              "string",
+              "null"
+            ]
+          },
+          "fileId": {
+            "type": [
+              "integer",
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "enum": [
+              "curseforge",
+              "modrinth",
+              "github",
+              "manual"
+            ]
+          }
         },
         "additionalProperties": false
       }
