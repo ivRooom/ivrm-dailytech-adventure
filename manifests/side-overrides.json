@@ -1,0 +1,13 @@
+{
+  "default": "both",
+  "byModId": {
+    "alternate_current": "server",
+    "chunky": "server",
+    "leaderboards": "server",
+    "luckperms": "server",
+    "servercore": "server",
+    "spark": "server",
+    "tab": "server"
+  },
+  "byFilename": {}
+}
