@@ -25,17 +25,18 @@ import org.slf4j.LoggerFactory;
 @Mod(IvrmPermissionControl.MOD_ID)
 public final class IvrmPermissionControl {
     public static final String MOD_ID = "ivrm_permission_control";
+    private static final String PERMISSION_NAMESPACE = "ivrm";
     private static final Logger LOGGER = LoggerFactory.getLogger(IvrmPermissionControl.class);
     private static final long MESSAGE_COOLDOWN_MILLIS = 3_000L;
     private static final Component DENIED = Component.literal("この操作はメンバー承認後に利用できます。");
     private static final Map<UUID, Long> LAST_MESSAGE = new ConcurrentHashMap<>();
 
-    public static final PermissionNode<Boolean> BUILD = permission("ivrm.play.build");
-    public static final PermissionNode<Boolean> CRAFT = permission("ivrm.play.craft");
-    public static final PermissionNode<Boolean> CONTAINER = permission("ivrm.play.container");
-    public static final PermissionNode<Boolean> INTERACT = permission("ivrm.play.interact");
-    public static final PermissionNode<Boolean> COMBAT = permission("ivrm.play.combat");
-    public static final PermissionNode<Boolean> PICKUP = permission("ivrm.play.pickup");
+    public static final PermissionNode<Boolean> BUILD = permission("play.build");
+    public static final PermissionNode<Boolean> CRAFT = permission("play.craft");
+    public static final PermissionNode<Boolean> CONTAINER = permission("play.container");
+    public static final PermissionNode<Boolean> INTERACT = permission("play.interact");
+    public static final PermissionNode<Boolean> COMBAT = permission("play.combat");
+    public static final PermissionNode<Boolean> PICKUP = permission("play.pickup");
 
     public IvrmPermissionControl() {
         NeoForge.EVENT_BUS.register(this);
@@ -43,7 +44,7 @@ public final class IvrmPermissionControl {
     }
 
     private static PermissionNode<Boolean> permission(String node) {
-        return new PermissionNode<>(MOD_ID, node, PermissionTypes.BOOLEAN,
+        return new PermissionNode<>(PERMISSION_NAMESPACE, node, PermissionTypes.BOOLEAN,
                 (player, playerUuid, context) -> false);
     }
 
@@ -68,62 +69,70 @@ public final class IvrmPermissionControl {
 
     @SubscribeEvent
     public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, BUILD)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, BUILD)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, INTERACT)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, INTERACT)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, INTERACT)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, INTERACT)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, INTERACT)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, INTERACT)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, INTERACT)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, INTERACT)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onAttack(AttackEntityEvent event) {
-        if (serverPlayer(event.getEntity()) instanceof ServerPlayer player && deny(player, COMBAT)) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player != null && deny(player, COMBAT)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onPickup(ItemEntityPickupEvent.Pre event) {
-        if (serverPlayer(event.getPlayer()) instanceof ServerPlayer player && deny(player, PICKUP)) {
+        ServerPlayer player = serverPlayer(event.getPlayer());
+        if (player != null && deny(player, PICKUP)) {
             event.setCanPickup(TriState.FALSE);
         }
     }
 
     @SubscribeEvent
     public void onToss(ItemTossEvent event) {
-        if (serverPlayer(event.getPlayer()) instanceof ServerPlayer player && deny(player, PICKUP)) {
+        ServerPlayer player = serverPlayer(event.getPlayer());
+        if (player != null && deny(player, PICKUP)) {
             event.setCanceled(true);
         }
     }
 
-    private static Player serverPlayer(Player player) {
-        return player.level().isClientSide() ? null : player;
+    private static ServerPlayer serverPlayer(Player player) {
+        return player instanceof ServerPlayer serverPlayer ? serverPlayer : null;
     }
 
     private static boolean deny(ServerPlayer player, PermissionNode<Boolean> node) {
