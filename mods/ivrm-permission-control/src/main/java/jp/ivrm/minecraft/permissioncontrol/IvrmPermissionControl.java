@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.TriState;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -62,6 +63,7 @@ public final class IvrmPermissionControl {
             LOGGER.info("IVRMイベント検知: place player={}", player.getGameProfile().name());
             if (deny(player, BUILD)) {
                 event.setCanceled(true);
+                resyncInventory(player);
             }
         }
     }
@@ -80,11 +82,19 @@ public final class IvrmPermissionControl {
     @SubscribeEvent
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         ServerPlayer player = serverPlayer(event.getEntity());
-        if (player != null) {
-            LOGGER.info("IVRMイベント検知: right_click_block player={}", player.getGameProfile().name());
-            if (deny(player, INTERACT)) {
-                event.setCanceled(true);
-            }
+        if (player == null) {
+            return;
+        }
+
+        boolean placingBlock = event.getItemStack().getItem() instanceof BlockItem;
+        PermissionNode<Boolean> requiredNode = placingBlock ? BUILD : INTERACT;
+
+        LOGGER.info("IVRMイベント検知: right_click_block player={}, placing_block={}",
+                player.getGameProfile().name(), placingBlock);
+
+        if (deny(player, requiredNode)) {
+            event.setCanceled(true);
+            resyncInventory(player);
         }
     }
 
@@ -95,6 +105,7 @@ public final class IvrmPermissionControl {
             LOGGER.info("IVRMイベント検知: right_click_item player={}", player.getGameProfile().name());
             if (deny(player, INTERACT)) {
                 event.setCanceled(true);
+                resyncInventory(player);
             }
         }
     }
@@ -150,6 +161,7 @@ public final class IvrmPermissionControl {
             LOGGER.info("IVRMイベント検知: toss player={}", player.getGameProfile().name());
             if (deny(player, PICKUP)) {
                 event.setCanceled(true);
+                resyncInventory(player);
             }
         }
     }
@@ -174,6 +186,13 @@ public final class IvrmPermissionControl {
             notifyDenied(player);
         }
         return !allowed;
+    }
+
+    private static void resyncInventory(ServerPlayer player) {
+        player.containerMenu.sendAllDataToRemote();
+        if (player.inventoryMenu != player.containerMenu) {
+            player.inventoryMenu.sendAllDataToRemote();
+        }
     }
 
     private static void notifyDenied(ServerPlayer player) {
