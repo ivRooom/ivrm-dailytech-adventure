@@ -14,6 +14,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.server.permission.PermissionAPI;
@@ -41,7 +42,7 @@ public final class IvrmPermissionControl {
 
     public IvrmPermissionControl() {
         NeoForge.EVENT_BUS.register(this);
-        LOGGER.info("IVRM Permission Controlを初期化しました（NeoForge EVENT_BUS方式）");
+        LOGGER.info("IVRM Permission Controlを初期化しました");
     }
 
     private static PermissionNode<Boolean> permission(String node) {
@@ -60,7 +61,7 @@ public final class IvrmPermissionControl {
     @SubscribeEvent
     public void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            LOGGER.info("IVRMイベント検知: place player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: place player={}", player.getGameProfile().name());
             if (deny(player, BUILD)) {
                 event.setCanceled(true);
                 resyncInventory(player);
@@ -72,7 +73,7 @@ public final class IvrmPermissionControl {
     public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         ServerPlayer player = serverPlayer(event.getEntity());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: left_click_block player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: left_click_block player={}", player.getGameProfile().name());
             if (deny(player, BUILD)) {
                 event.setCanceled(true);
             }
@@ -89,7 +90,7 @@ public final class IvrmPermissionControl {
         boolean placingBlock = event.getItemStack().getItem() instanceof BlockItem;
         PermissionNode<Boolean> requiredNode = placingBlock ? BUILD : INTERACT;
 
-        LOGGER.info("IVRMイベント検知: right_click_block player={}, placing_block={}",
+        LOGGER.debug("IVRMイベント検知: right_click_block player={}, placing_block={}",
                 player.getGameProfile().name(), placingBlock);
 
         if (deny(player, requiredNode)) {
@@ -102,7 +103,7 @@ public final class IvrmPermissionControl {
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         ServerPlayer player = serverPlayer(event.getEntity());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: right_click_item player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: right_click_item player={}", player.getGameProfile().name());
             if (deny(player, INTERACT)) {
                 event.setCanceled(true);
                 resyncInventory(player);
@@ -114,7 +115,7 @@ public final class IvrmPermissionControl {
     public void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ServerPlayer player = serverPlayer(event.getEntity());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: entity_interact player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: entity_interact player={}", player.getGameProfile().name());
             if (deny(player, INTERACT)) {
                 event.setCanceled(true);
             }
@@ -125,7 +126,7 @@ public final class IvrmPermissionControl {
     public void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
         ServerPlayer player = serverPlayer(event.getEntity());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: entity_interact_specific player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: entity_interact_specific player={}", player.getGameProfile().name());
             if (deny(player, INTERACT)) {
                 event.setCanceled(true);
             }
@@ -136,7 +137,7 @@ public final class IvrmPermissionControl {
     public void onAttack(AttackEntityEvent event) {
         ServerPlayer player = serverPlayer(event.getEntity());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: attack player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: attack player={}", player.getGameProfile().name());
             if (deny(player, COMBAT)) {
                 event.setCanceled(true);
             }
@@ -147,7 +148,7 @@ public final class IvrmPermissionControl {
     public void onPickup(ItemEntityPickupEvent.Pre event) {
         ServerPlayer player = serverPlayer(event.getPlayer());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: pickup player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: pickup player={}", player.getGameProfile().name());
             if (deny(player, PICKUP)) {
                 event.setCanPickup(TriState.FALSE);
             }
@@ -158,11 +159,27 @@ public final class IvrmPermissionControl {
     public void onToss(ItemTossEvent event) {
         ServerPlayer player = serverPlayer(event.getPlayer());
         if (player != null) {
-            LOGGER.info("IVRMイベント検知: toss player={}", player.getGameProfile().name());
+            LOGGER.debug("IVRMイベント検知: toss player={}", player.getGameProfile().name());
             if (deny(player, PICKUP)) {
                 event.setCanceled(true);
                 resyncInventory(player);
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onContainerOpen(PlayerContainerEvent.Open event) {
+        ServerPlayer player = serverPlayer(event.getEntity());
+        if (player == null || event.getContainer() == player.inventoryMenu) {
+            return;
+        }
+
+        LOGGER.debug("IVRMイベント検知: container_open player={}, menu={}",
+                player.getGameProfile().name(), event.getContainer().getClass().getName());
+
+        if (deny(player, CONTAINER)) {
+            player.closeContainer();
+            resyncInventory(player);
         }
     }
 
@@ -174,7 +191,7 @@ public final class IvrmPermissionControl {
         boolean allowed;
         try {
             allowed = PermissionAPI.getPermission(player, node);
-            LOGGER.info("IVRM権限判定: player={}, node={}, allowed={}",
+            LOGGER.debug("IVRM権限判定: player={}, node={}, allowed={}",
                     player.getGameProfile().name(), node.getNodeName(), allowed);
         } catch (RuntimeException exception) {
             LOGGER.error("権限判定に失敗したため安全側で拒否します: player={}, node={}",
