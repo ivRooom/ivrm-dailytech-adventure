@@ -1,0 +1,23 @@
+services:
+  velocity:
+    image: itzg/mc-proxy:java21
+    container_name: ivrm-velocity-test
+    restart: unless-stopped
+    environment:
+      TYPE: VELOCITY
+      VELOCITY_VERSION: latest
+      MEMORY: 256m
+    ports:
+      - "25566:25565"
+    volumes:
+      - ./data:/server
+      - ./config:/config:ro
+    networks:
+      - minecraft-main
+    mem_limit: 512m
+    cpus: 0.50
+
+networks:
+  minecraft-main:
+    external: true
+    name: minecraft-main_default
