@@ -1,6 +1,6 @@
 services:
   velocity:
-    image: itzg/mc-proxy:java21
+    image: itzg/mc-proxy:java25
     container_name: ivrm-velocity-test
     restart: unless-stopped
     environment:
