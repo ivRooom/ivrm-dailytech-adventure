@@ -54,13 +54,6 @@ public final class IvrmPermissionControl {
     }
 
     @SubscribeEvent
-    public void onBreak(BlockEvent.BreakEvent event) {
-        if (event.getPlayer() instanceof ServerPlayer player && deny(player, BUILD)) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
     public void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && deny(player, BUILD)) {
             event.setCanceled(true);
