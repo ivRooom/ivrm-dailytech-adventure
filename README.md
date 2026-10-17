@@ -72,3 +72,7 @@ deploy/       秘密情報を含まない例
 ## ライセンス
 
 このリポジトリ内の独自スクリプトと設定ソースはMIT Licenseです。各MOD本体・名称・画像・アセットは各作者のライセンスに従います。このリポジトリはMOD JARを再配布しません。
+
+## Agent Skills / 安全なModpack更新
+
+[Modpack変更・段階適用Skill](.agents/skills/modpack-change-rollout/SKILL.md) では、MOD SHA-256 Lock、設定とWorldgenの影響、負荷、バックアップ、OCI接続、承認・Rollbackを整理しています。横断運用は [ivrm-platform Agent Skills](https://github.com/ivRooom/ivrm-platform/tree/main/.agents/skills) を使用します（`ivrm-platform` は非公開Repositoryのため、参照にはアクセス権が必要です）。
