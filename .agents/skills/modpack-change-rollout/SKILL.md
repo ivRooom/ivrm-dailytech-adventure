@@ -8,7 +8,7 @@ description: ivRooom Minecraft ModpackのJAR/Manifest/Quest/Config/Datapack追�
 ## 作業対象
 
 - `README.md`、`docs/architecture.md`、`docs/oci-mod-lock.md`、`docs/world-generation.md`、`manifests/`、`config-src/`、`.github/workflows/validate.yml` が正本。
-- [共通Minecraft運用](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/minecraft-operations/SKILL.md) と [MCP接続基準](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/tool-access-and-mcp/SKILL.md)、プロバイダー移行時は [provider-migration](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/provider-migration/SKILL.md) を併用。
+- [共通Minecraft運用](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/minecraft-operations/SKILL.md) と [MCP接続基準](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/tool-access-and-mcp/SKILL.md)、プロバイダー移行時は [provider-migration](https://github.com/ivRooom/ivrm-platform/blob/main/.agents/skills/provider-migration/SKILL.md) を併用（`ivrm-platform` はPrivateで、許可されたGitHub接続が必要。取得できない場合は未参照と記録）。
 - このRepositoryはサニタイズ済みのManifest/設定/Quests/Datapacks/例示を管理する。Minecraft World、本番Config、MOD JAR/秘密鍵は含めない。独自MODソースは `ivrm-mcmod` の責務。
 
 ## 変更前の診断
